@@ -26,7 +26,7 @@ functions with a simple decorator::
 Installation
 ------------
 
-Installation is easy with pip::
+Installation is very easy with pip::
 
     pip install Cachual
 
