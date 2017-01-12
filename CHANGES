@@ -3,6 +3,12 @@ Cachual Changelog
 
 Here you can see the full list of changes between each Cachual release.
 
+Version 0.2.1
+-------------
+
+- Added unpack_bytes to deal with converting the bytes returned from the cache
+  libraries in Python 3 to unicode strings (assuming UTF-8 encoding).
+
 Version 0.2.0
 -------------
 
