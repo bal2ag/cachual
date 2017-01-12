@@ -37,3 +37,15 @@ def test_put(mock_redis):
     unit = RedisCache()
     unit.put(key, value, ttl)
     client.set.assert_called_with(key, value, ex=ttl)
+
+@mock.patch('cachual.StrictRedis')
+def test_put_no_ttl(mock_redis):
+    client = MagicMock()
+    client.set = MagicMock()
+    mock_redis.return_value = client
+    key = "test"
+    value = "value"
+
+    unit = RedisCache()
+    unit.put(key, value)
+    client.set.assert_called_with(key, value, ex=None)

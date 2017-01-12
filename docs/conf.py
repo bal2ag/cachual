@@ -41,6 +41,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    'pymemcache': ('https://pymemcache.readthedocs.io/en/latest/', None),
     'python': ('https://docs.python.org/3/', None)
 }
 

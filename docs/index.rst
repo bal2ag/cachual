@@ -192,6 +192,16 @@ Caching
 
 .. autoclass:: RedisCache
 
+   .. automethod:: get
+
+   .. automethod:: put
+
+.. autoclass:: MemcachedCache
+
+   .. automethod:: get
+
+   .. automethod:: put
+
 .. _packinghelpers:
 
 Packing and Unpacking Helpers

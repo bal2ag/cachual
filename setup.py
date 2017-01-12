@@ -35,6 +35,7 @@ setup(
     include_package_data=True,
     platforms='any',
     install_requires=[
+        'pymemcache>=1.4.0',
         'redis>=2.10',
     ],
     classifiers=[

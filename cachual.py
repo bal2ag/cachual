@@ -1,15 +1,13 @@
-import logging, json, sys
+import logging, json, sys, hashlib
 
 if (sys.version_info > (3, 0)):
-    def unicode(value):
-        return str(value)
-
     def long(value):
         return int(value)
 
 from functools import wraps
 
 from redis import StrictRedis
+from pymemcache.client.base import Client as MemcachedClient
 
 __version__ = '0.1.0'
 
@@ -101,12 +99,12 @@ class CachualCache(object):
         """Internal function to build the cache key from the function and the
         args and kwargs it was called with."""
         if args:
-            args_str = ', '.join([unicode(a) for a in args])
+            args_str = ', '.join([_unicode(a) for a in args])
         else:
             args_str = None
         if kwargs:
             kwargs_str = ', '.join(\
-                    ['%s=%s' % (unicode(k), unicode(kwargs[k]))\
+                    ['%s=%s' % (_unicode(k), _unicode(kwargs[k]))\
                     for k in sorted(kwargs.keys())])
         else:
             kwargs_str = None
@@ -125,14 +123,17 @@ class CachualCache(object):
             else:
                 suffix = '()'
 
-        return '%s%s' % (prefix, suffix)
+        m = hashlib.md5()
+        key = ('%s%s' % (prefix, suffix)).encode('utf-8')
+        m.update(key)
+        return m.hexdigest()
 
 class RedisCache(CachualCache):
-    """A cache using Redis as the backing cache. All values will be stored as
-    strings, meaning if you try to store non-string values in the cache, their
-    unicode equivalent will be stored. If you want to alter this behavior e.g.
-    to store Python dictionaries, use the pack/unpack arguments when you
-    specify your @cached decorator.
+    """A cache using `Redis <https://redis.io/>`_ as the backing cache. All
+    values will be stored as strings, meaning if you try to store non-string
+    values in the cache, their unicode equivalent will be stored. If you want
+    to alter this behavior e.g. to store Python dictionaries, use the
+    pack/unpack arguments when you specify your @cached decorator.
 
     :type host: string
     :param host: The Redis host to use for the cache.
@@ -153,7 +154,7 @@ class RedisCache(CachualCache):
 
     def get(self, key):
         """Get a value from the cache using the given key.
-        
+
         :type key: string
         :param key: The cache key to get the value for.
 
@@ -180,6 +181,55 @@ class RedisCache(CachualCache):
                     expire.
         """
         self.client.set(key, value, ex=ttl)
+
+class MemcachedCache(CachualCache):
+    """A cache using `Memcached <https://memcached.org/>`_ as the backing
+    cache. The same caveats apply to keys and values as for Redis - you should
+    only try to store strings (using the packing/unpacking functions). See the
+    documentation on Keys and Values here:
+    :class:`pymemcache.client.base.Client`.
+
+    :type host: string
+    :param host: The Memcached host to use for the cache.
+
+    :type port: integer
+    :param port: The port to use for the Memcached server.
+
+    :type kwargs: dict
+    :param kwargs: Any additional args to pass to the :class:`CachualCache`
+                   constructor.
+    """
+    def __init__(self, host='localhost', port=11211, **kwargs):
+        super(MemcachedCache, self).__init__(**kwargs)
+        self.client = MemcachedClient((host, port))
+
+    def get(self, key):
+        """Get a value from the cache using the given key.
+
+        :type key: string
+        :param key: The cache key to get the value for.
+
+        :returns: The value for the cache key, or None in the case of cache
+                  miss.
+        """
+        return self.client.get(key)
+
+    def put(self, key, value, ttl=None):
+        """Put a value into the cache at the given key. For constraints on keys
+        and values, see :class:`pymemcache.client.base.Client`.
+
+        :type key: string
+        :param key: The cache key to use for the value.
+
+        :param value: The value to store in the cache.
+
+        :type ttl: integer
+        :param ttl: The time-to-live for key in seconds, after which it will
+                    expire.
+        """
+        if ttl is None:
+            ttl = 0
+        self.client.set(key, value, expire=ttl)
 
 def pack_json(value):
     """Pack the given JSON structure for storage in the cache by dumping it as
@@ -251,3 +301,13 @@ def unpack_bool(value):
     elif value == 'False':
          return False
     raise ValueError("Cannot convert %s to bool" % value)
+
+def _unicode(value):
+    if (sys.version_info > (3, 0)): # Handling for Python 3; str is unicode
+        return str(value)
+
+    if isinstance(value, unicode):
+        return value
+    elif isinstance(value, str):
+        return value.decode('utf-8')
+    return unicode(str(value), encoding='utf-8')
