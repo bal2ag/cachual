@@ -262,6 +262,17 @@ def unpack_json_python3(value):
     """
     return unpack_json(value.decode('utf-8'))
 
+def unpack_bytes(value):
+    """Unpack the given Python 3 bytes by loading them as a Python 3 unicode
+    string, assuming UTF-8 encoding.
+
+    :type value: bytes
+    :param value: The bytes to unpack.
+
+    :returns: The bytes as a Python 3 unicode string, assuming UTF-8 encoding.
+    """
+    return value.decode('utf-8')
+
 def unpack_int(value):
     """Unpack the given string into an integer.
 

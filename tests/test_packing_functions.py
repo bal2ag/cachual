@@ -1,5 +1,6 @@
 from cachual import (pack_json, unpack_json, unpack_int, unpack_long,
-                     unpack_float, unpack_bool, unpack_json_python3)
+                     unpack_float, unpack_bool, unpack_json_python3,
+                     unpack_bytes)
 
 import sys
 if (sys.version_info > (3, 0)):
@@ -35,6 +36,13 @@ def test_unpack_json_python3():
     else:
         test_value = str('{"test": "testing"}')
     assert unpack_json_python3(test_value) == {"test": "testing"}
+
+def test_unpack_bytes():
+    if (sys.version_info > (3, 0)):
+        test_value = bytes("testing", encoding="utf-8")
+    else:
+        test_value = str("testing")
+    assert unpack_bytes(test_value) == "testing"
 
 def test_unpack_int():
     test_value = "3"

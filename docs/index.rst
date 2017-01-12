@@ -183,9 +183,10 @@ allows you to rewrite the examples above::
     def get_user_json(user_id):
         ...
 
-Note that for Python 3, you will want to use :data:`unpack_json_python3`
-because the data returned from the cache will be bytes (as opposed to the
-unicode string that is the default in Python 3).
+Note that for Python 3, you will want to use :data:`unpack_json_python3` for
+JSON data and :data:`unpack_bytes` for unicode string data because the value
+returned from the cache will be bytes (as opposed to the unicode string that
+is the default string type in Python 3).
 
 For a complete list of these helper functions see :ref:`packinghelpers`.
 
@@ -238,6 +239,8 @@ a cache which stores everything as a string.
 .. autofunction:: unpack_json
 
 .. autofunction:: unpack_json_python3
+
+.. autofunction:: unpack_bytes
 
 .. autofunction:: unpack_int
 
