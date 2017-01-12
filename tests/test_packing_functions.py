@@ -1,5 +1,5 @@
 from cachual import (pack_json, unpack_json, unpack_int, unpack_long,
-                     unpack_float, unpack_bool)
+                     unpack_float, unpack_bool, unpack_json_python3)
 
 import sys
 if (sys.version_info > (3, 0)):
@@ -11,7 +11,7 @@ if (sys.version_info > (3, 0)):
 
 from mock import MagicMock, mock
 
-import pytest
+import pytest, sys
 
 @mock.patch("cachual.json")
 def test_pack_json(mock_json):
@@ -28,6 +28,13 @@ def test_unpack_json(mock_json):
 
     assert unpack_json("test") == test_value
     mock_json.loads.assert_called_with("test")
+
+def test_unpack_json_python3():
+    if (sys.version_info > (3, 0)):
+        test_value = bytes('{"test": "testing"}', encoding="utf-8")
+    else:
+        test_value = str('{"test": "testing"}')
+    assert unpack_json_python3(test_value) == {"test": "testing"}
 
 def test_unpack_int():
     test_value = "3"

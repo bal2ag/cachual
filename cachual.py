@@ -252,6 +252,16 @@ def unpack_json(value):
     """
     return json.loads(value)
 
+def unpack_json_python3(value):
+    """Unpack the given Python 3 bytes by loading them as JSON.
+
+    :type value: bytes
+    :param value: The bytes to unpack.
+
+    :returns: The bytes as JSON.
+    """
+    return unpack_json(value.decode('utf-8'))
+
 def unpack_int(value):
     """Unpack the given string into an integer.
 
@@ -303,6 +313,8 @@ def unpack_bool(value):
     raise ValueError("Cannot convert %s to bool" % value)
 
 def _unicode(value):
+    """Helper function to return the value as a unicode, regardless of the
+    Python version of the type of the value."""
     if (sys.version_info > (3, 0)): # Handling for Python 3; str is unicode
         return str(value)
 

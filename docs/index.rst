@@ -214,6 +214,8 @@ a cache which stores everything as a string.
 
 .. autofunction:: unpack_json
 
+.. autofunction:: unpack_json_python3
+
 .. autofunction:: unpack_int
 
 .. autofunction:: unpack_long
