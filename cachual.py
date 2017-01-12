@@ -9,7 +9,7 @@ from functools import wraps
 from redis import StrictRedis
 from pymemcache.client.base import Client as MemcachedClient
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 class CachualCache(object):
     """Base class for all cache implementations. Provides the
