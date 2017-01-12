@@ -34,4 +34,4 @@ Docs
 ----
 
 Check out the full
-`documentation <http://cachual.readthedocs.io/en/latest/overview.html>`_.
+`documentation <http://cachual.readthedocs.io/en/latest/>`_.
