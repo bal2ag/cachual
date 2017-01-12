@@ -320,6 +320,4 @@ def _unicode(value):
 
     if isinstance(value, unicode):
         return value
-    elif isinstance(value, str):
-        return value.decode('utf-8')
     return unicode(str(value), encoding='utf-8')

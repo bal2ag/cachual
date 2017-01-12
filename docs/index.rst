@@ -90,6 +90,25 @@ function resides. After that one of four strings is appended:
    included first, and the keyword arguments will be included in alphabetical
    order of the keys after the positional argument values.
 
+Finally, the entire (unicode) key is encoded as UTF-8 and hashed using MD5.
+This is to ensure that key format is uniform and consistent, because some
+backends (such as Memcached) have restrictions around cache keys, such as
+disallowing certain characters and size limits.
+
+For Python 3, all strings are unicode and the default encoding is UTF-8; thus,
+the value for each argument will be coerced to unicode using the builtin
+``str`` function. Python 2 is a bit more complicated; strings are bytestrings
+by default. If you pass a unicode value, that will be the value used for the
+cache key. If you pass a string literal, it will be converted to unicode
+(assuming UTF-8 encoding). Anything else will be converted to a bytestring
+(using the builtin ``str`` function) and then converted to unicode assuming
+UTF-8 encoding.
+
+Arguments **should** be able to take on any value, but as a best practice, I
+highly recommend you only pass the basic types to your functions e.g. string,
+integer, float, etc. Even better, stick to unicode values for your strings
+regardless of what version of Python you're using.
+
 .. note:: Because the unicode value of each argument is used to generate the
    cache key, you need to be careful that you are consistent in your function
    calls with respect to the types of your arguments. For example, if you have
@@ -163,6 +182,10 @@ allows you to rewrite the examples above::
     @cache.cached(ttl=300, pack=pack_json, unpack=unpack_json)
     def get_user_json(user_id):
         ...
+
+Note that for Python 3, you will want to use :data:`unpack_json_python3`
+because the data returned from the cache will be bytes (as opposed to the
+unicode string that is the default in Python 3).
 
 For a complete list of these helper functions see :ref:`packinghelpers`.
 
