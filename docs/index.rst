@@ -97,10 +97,10 @@ disallowing certain characters and size limits.
 
 For Python 3, all strings are unicode and the default encoding is UTF-8; thus,
 the value for each argument will be coerced to unicode using the builtin
-``str`` function. Python 2 is a bit more complicated; strings are bytestrings
+``str`` function. Python 2 is a bit more complicated; strings are bytes
 by default. If you pass a unicode value, that will be the value used for the
 cache key. If you pass a string literal, it will be converted to unicode
-(assuming UTF-8 encoding). Anything else will be converted to a bytestring
+(assuming UTF-8 encoding). Anything else will be converted to bytes
 (using the builtin ``str`` function) and then converted to unicode assuming
 UTF-8 encoding.
 
@@ -126,6 +126,43 @@ regardless of what version of Python you're using.
    that are different types but have the same unicode value. This is good
    practice anyway; mixing types for the same argument value can lead to
    unmaintainable code and unexpected bugs.
+
+Caching Methods
+---------------
+
+.. versionadded:: 0.2.2
+
+You will probably find yourself wanting to cache methods as well - both
+classmethods and instance methods. Calls to these methods will pass the calling
+class (in the former) or the object (in the latter) as the first argument.
+
+For classmethods, you will get the correct behavior: calls to your cached
+method with the same arguments from the same class will get the same cache key.
+Calling the method with a different class will result in a different cache key
+(even if the arguments are the same).
+
+Instance methods are a little trickier. By default you will get a different
+cache key for calls to your instance method with the same arguments *if you
+are calling from different instances*, because the default representation of an
+object in Python includes its memory location. This behavior may be undesirable
+in some situations, for example if you have a web service that generates a
+client object for an external API on every request. In this case you probably
+want the same cache key for any external API calls with the same arguments,
+even though the there is a new client object each request.
+
+To get the desired behavior you can set the ``use_class_for_self`` parameter to
+``True`` to use the class representation instead of the instance object
+representation of the first parameter, which will use the same cache key for
+any calls as long as they are from instances of the same class::
+
+    class ExternalAPIClient(object):
+        
+        @cache.cached(use_class_for_self=True)
+        def get_location_name_by_id(self, id):
+            ...
+
+    ExternalAPIClient().get_location_name_by_id("test") # Stores in cache
+    ExternalAPIClient().get_location_name_by_id("test") # Cache hit
 
 Caching Different Data Types
 ============================
@@ -198,7 +235,7 @@ For a complete list of these helper functions see :ref:`packinghelpers`.
    functions very simple (or use the helpers!). Make sure you understand how
    the underlying caching system and library deals with your data,
    particularly when it comes to encoding. For example, Redis will encode your
-   value as a bytestring if possible, falling back to the unicode
+   value as bytes if possible, falling back to the unicode
    representation otherwise (which is why you need to use the pack/unpack
    functions as above for dictionaries).
 

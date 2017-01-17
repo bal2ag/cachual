@@ -26,7 +26,8 @@ class CachualCache(object):
     def __init__(self):
         self.logger = logging.getLogger("cachual")
 
-    def cached(self, ttl=None, pack=None, unpack=None):
+    def cached(self, ttl=None, pack=None, unpack=None,
+            use_class_for_self=False):
         """Functions decorated with this will have their return values cached.
         It should be used as follows::
 
@@ -67,11 +68,31 @@ class CachualCache(object):
                        used to alter the value that gets returned from a cache
                        hit, in case you need to process it first (e.g. turn a
                        JSON string into a Python dictionary).
+
+        :type use_class_for_self: bool
+        :param use_class_for_self: If True, cache keys will use the class
+                                   representation of the first parameter
+                                   instead of the object representation. This
+                                   is useful when you want to cache instance
+                                   methods, but you want the same cache key if
+                                   the instance method's arguments are the same.
+                                   An example would be a stateless class that
+                                   is a client wrapper for an external service.
+                                   The first argument would be the instance
+                                   object, whose default representation
+                                   contains the memory location of the object
+                                   (and thus would be different for every
+                                   instance, which is undesirable for a
+                                   stateless class).
+
+        .. versionchanged:: 0.2.2
+           Added ``use_class_for_self`` parameter.
         """
         def decorator(f):
             @wraps(f)
             def decorated(*args, **kwargs):
-                key = self._get_key_from_func(f, args, kwargs)
+                key = self._get_key_from_func(f, args, kwargs,
+                        use_class_for_self)
                 self.logger.debug("key: [%s]" % key)
                 try:
                     value = self.get(key)
@@ -95,9 +116,18 @@ class CachualCache(object):
             return decorated
         return decorator
 
-    def _get_key_from_func(self, f, args, kwargs):
+    def _get_key_from_func(self, f, args, kwargs, use_class_for_self=False):
         """Internal function to build the cache key from the function and the
         args and kwargs it was called with."""
+        if use_class_for_self:
+            # For instance methods, the first argument will be an object,
+            # whose representation will include a memory location and result in
+            # a new cache key for every instance. This behavior may be
+            # undesirable, especially if the class instances are stateless.
+            # use_class_from_self can be used to use the class instead of the
+            # object for the first argument.
+            args = [args[0].__class__] + list(args[1:])
+
         if args:
             args_str = ', '.join([_unicode(a) for a in args])
         else:
@@ -125,6 +155,7 @@ class CachualCache(object):
 
         m = hashlib.md5()
         key = ('%s%s' % (prefix, suffix)).encode('utf-8')
+        self.logger.debug('prehash key: [%s]' % key)
         m.update(key)
         return m.hexdigest()
 
