@@ -3,6 +3,15 @@ Cachual Changelog
 
 Here you can see the full list of changes between each Cachual release.
 
+Version 0.2.2
+-------------
+
+- Added use_class_for_self parameter to @cached annotation, to allow caching of
+  instance methods for stateless clasess.
+- Updated documentation about caching methods.
+- Added end-to-end tests for various class combinations to ensure correct
+  caching behavior.
+
 Version 0.2.1
 -------------
 
