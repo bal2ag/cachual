@@ -2,9 +2,9 @@ from cachual import CachualCache
 
 from mock import MagicMock
 
-import hashlib, sys
+import hashlib
 
-class MockCache(CachualCache):
+class FakeCache(CachualCache):
     def __init__(self):
         pass
     get = MagicMock(return_value=None)
@@ -12,7 +12,7 @@ class MockCache(CachualCache):
     logger = MagicMock()
 
 def get_unit():
-    return MockCache()
+    return FakeCache()
 
 def get_hash(value):
     m = hashlib.md5()
@@ -28,7 +28,7 @@ def test_function():
     
     a = 'a'
     b = 'b'
-    expected_key = get_hash('test_e2e.testing(a, b=b)')
+    expected_key = get_hash('test_end_to_end.testing(a, b=b)')
     testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -47,7 +47,7 @@ def test_classmethod():
     
     a = 'a'
     b = 'b'
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % Test)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % Test)
     Test().testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -67,7 +67,7 @@ def test_instancemethod():
     a = 'a'
     b = 'b'
     t = Test()
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % t)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % t)
     t.testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -90,7 +90,7 @@ def test_subclass_classmethod():
     
     a = 'a'
     b = 'b'
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % SubTest)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % SubTest)
     SubTest().testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -115,7 +115,7 @@ def test_subclass_instancemethod():
     a = 'a'
     b = 'b'
     t = SubTest()
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % t)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % t)
     t.testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -135,7 +135,7 @@ def test_instancemethod_use_class_for_self():
     a = 'a'
     b = 'b'
     t = Test()
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % Test)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % Test)
     t.testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
@@ -159,7 +159,7 @@ def test_subclass_instancemethod_use_class_for_self():
     a = 'a'
     b = 'b'
     t = SubTest()
-    expected_key = get_hash('test_e2e.testing(%s, a, b=b)' % SubTest)
+    expected_key = get_hash('test_end_to_end.testing(%s, a, b=b)' % SubTest)
     t.testing(a, b=b)
 
     unit.get.assert_called_with(expected_key)
